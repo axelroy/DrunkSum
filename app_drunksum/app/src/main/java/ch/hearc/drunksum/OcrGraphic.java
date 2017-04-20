@@ -19,6 +19,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.util.Log;
 
 import ch.hearc.drunksum.camera.GraphicOverlay;
 import com.google.android.gms.vision.text.Text;
@@ -33,11 +34,10 @@ public class OcrGraphic extends GraphicOverlay.Graphic {
 
     private int mId;
 
-    private static final int TEXT_COLOR = Color.WHITE;
-
     private Paint mRectPaint;
     private Paint mTextPaint;
     private final Text mText;
+    private double value;
 
     OcrGraphic(GraphicOverlay overlay, Text text, int color) {
         super(overlay);
@@ -80,8 +80,16 @@ public class OcrGraphic extends GraphicOverlay.Graphic {
      * @return True if the provided point is contained within this graphic's bounding box.
      */
     public boolean contains(float x, float y) {
-        // TODO: Check if this graphic's text contains this point.
-        return false;
+        // Check if this graphic's text contains this point.
+        if (mText == null) {
+            return false;
+        }
+        RectF rect = new RectF(mText.getBoundingBox());
+        rect.left = translateX(rect.left);
+        rect.top = translateY(rect.top);
+        rect.right = translateX(rect.right);
+        rect.bottom = translateY(rect.bottom);
+        return (rect.left < x && rect.right > x && rect.top < y && rect.bottom > y);
     }
 
     /**
@@ -114,5 +122,13 @@ public class OcrGraphic extends GraphicOverlay.Graphic {
             canvas.drawText(currentText.getValue(), left, bottom, mTextPaint);
         }
         */
+    }
+
+    public void setValue(double value) {
+        this.value = value;
+    }
+
+    public double getValue(){
+        return value;
     }
 }

@@ -25,6 +25,7 @@ import com.google.android.gms.vision.text.Text;
 import com.google.android.gms.vision.text.TextBlock;
 
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -38,10 +39,10 @@ public class OcrDetectorProcessor  implements Detector.Processor<TextBlock> {
     // regex pour détecter les nombres, ils ont toujours un point et deux digit après
     // chacun de ces éléments est obligatoire :
     // (\d|O|o)+ un chiffre [0-9], un O ou un o, 1 ou plusieurs fois
-    // (\.|\,) un point ou une virgule
+    // (\.|,) un point ou une virgule
     // (\d|o|O){2} un chiffre, un O ou un o, 2 fois
     // dans une string java, il faut échapper les backslahes pour qu'ils soit pris en compte dans la regex
-    private static Pattern NUMBER_PATTERN = Pattern.compile("(\\d|o|O)+(\\.|\\,)(\\d|o|O){2}");
+    private static Pattern NUMBER_PATTERN = Pattern.compile("(\\d|o|O)+(\\.|,)(\\d|o|O){2}");
 
     OcrDetectorProcessor(GraphicOverlay<OcrGraphic> ocrGraphicOverlay) {
         mGraphicOverlay = ocrGraphicOverlay;
@@ -67,20 +68,30 @@ public class OcrDetectorProcessor  implements Detector.Processor<TextBlock> {
                 for (int j = 0; j < lines.size(); ++j) {
                     Text line = lines.get(j);
                     Log.d("Processor", "-> ligne: '" + line.getValue() + "'");
-                    List<? extends Text> words = line.getComponents();
+
+                    //List<? extends Text> words = line.getComponents();
+                    String value = line.getValue().replace(" ","");
+                    Matcher matcher = NUMBER_PATTERN.matcher(value);
+
+                    // si le mot est un chiffre, on le dessine
+                    if(matcher.find()){
+                        OcrGraphic graphic = new OcrGraphic(mGraphicOverlay, line, Color.WHITE);
+                        graphic.setValue(Double.parseDouble(matcher.group()));
+                        mGraphicOverlay.add(graphic);
+                    }
+                    /*
                     for (int k = 0; k < words.size(); k++ ){
                         Text word = words.get(k);
                         Log.d("Processor", "--> mot: '" + word.getValue() + "'");
+                        String value = word.getValue().replace(" ","");
 
-                        // si le mot est un chiffre, on l'affiche en vert
-                        if(NUMBER_PATTERN.matcher(word.getValue()).matches()){
-                            OcrGraphic graphic = new OcrGraphic(mGraphicOverlay, line, Color.GREEN);
-                            mGraphicOverlay.add(graphic);
-                        }else{
+                        // si le mot est un chiffre, on le dessine
+                        if(NUMBER_PATTERN.matcher(value).matches()){
                             OcrGraphic graphic = new OcrGraphic(mGraphicOverlay, line, Color.WHITE);
                             mGraphicOverlay.add(graphic);
                         }
                     }
+                    */
                 }
             }
         }

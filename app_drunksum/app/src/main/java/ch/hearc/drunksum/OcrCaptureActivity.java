@@ -25,6 +25,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
@@ -46,9 +47,14 @@ import com.google.android.gms.samples.vision.drunksum.R;
 import ch.hearc.drunksum.camera.CameraSource;
 import ch.hearc.drunksum.camera.CameraSourcePreview;
 import ch.hearc.drunksum.camera.GraphicOverlay;
+
+import com.google.android.gms.vision.text.Text;
+import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 
 /**
  * Activity for the Ocr Detecting app.  This app detects text and displays the value with the
@@ -79,6 +85,7 @@ public final class OcrCaptureActivity extends AppCompatActivity {
 
     // A TextToSpeech engine for speaking a String value.
     private TextToSpeech tts;
+    private double mSum;
 
     /**
      * Initializes the UI and creates the detector pipeline.
@@ -194,7 +201,6 @@ public final class OcrCaptureActivity extends AppCompatActivity {
                         .setRequestedPreviewSize(1280, 1024)
                         .setRequestedFps(15.0f)
                         .setFlashMode(useFlash ? Camera.Parameters.FLASH_MODE_TORCH : null)
-//                        .setFocusMode(Camera.Parameters.FOCUS_MODE_MACRO)
                         .setFocusMode(autoFocus ? Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE : null)
                         .build();
     }
@@ -316,8 +322,34 @@ public final class OcrCaptureActivity extends AppCompatActivity {
      * @return true if the tap was on a TextBlock
      */
     private boolean onTap(float rawX, float rawY) {
-        // TODO: Add the number when the user taps on screen.
-        return false;
+        OcrGraphic graphic = mGraphicOverlay.getGraphicAtLocation(rawX, rawY);
+        Text text = null;
+        if (graphic != null) {
+            text = graphic.getText();
+            Log.d("onTap", "text tapped : " + text.getValue());
+
+            final double value = graphic.getValue();
+            Snackbar.make(mGraphicOverlay, "Add " + String.valueOf(value) + " ?",
+                    Snackbar.LENGTH_LONG)
+                    .setAction("add", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            OcrCaptureActivity.this.add(value);
+                        }
+                    })
+                    .show();
+        }
+        else {
+            Log.d("onTap", "no text detected");
+        }
+        return text != null;
+    }
+
+    private void add(double value) {
+        mSum += value;
+        NumberFormat formatter = new DecimalFormat("#0.00");
+        Log.d("Sum", String.valueOf(mSum));
+        setTitle("Sum: " + formatter.format(mSum));
     }
 
     private class CaptureGestureListener extends GestureDetector.SimpleOnGestureListener {
