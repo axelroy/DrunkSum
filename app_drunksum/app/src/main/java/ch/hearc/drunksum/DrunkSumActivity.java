@@ -25,15 +25,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.hardware.Camera;
 import android.os.Bundle;
-import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Menu;
@@ -42,6 +40,8 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -53,7 +53,6 @@ import ch.hearc.drunksum.camera.CameraSourcePreview;
 import ch.hearc.drunksum.camera.GraphicOverlay;
 
 import com.google.android.gms.vision.text.Text;
-import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
 
 import java.io.IOException;
@@ -65,8 +64,8 @@ import java.text.NumberFormat;
  * rear facing camera. During detection overlay graphics are drawn to indicate the position,
  * size, and contents of each TextBlock.
  */
-public final class OcrCaptureActivity extends AppCompatActivity {
-    private static final String TAG = "OcrCaptureActivity";
+public final class DrunkSumActivity extends AppCompatActivity {
+    private static final String TAG = "DrunkSumActivity";
 
     // Intent request code to handle updating play services if needed.
     private static final int RC_HANDLE_GMS = 9001;
@@ -134,11 +133,40 @@ public final class OcrCaptureActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId() ==R.id.reinit){
+        if(item.getItemId() == R.id.reinit){
+
             Toast.makeText(this, "Sum reinitialized", Toast.LENGTH_SHORT).show();
             mSum=0;
             setTitle("Sum: " + formatter.format(mSum));
+
+        }else if(item.getItemId() == R.id.divide){
+
+            AlertDialog.Builder alert = new AlertDialog.Builder(this);
+            alert.setTitle("Divide sum by:");
+            final EditText input = new EditText(this);
+            input.setInputType(InputType.TYPE_CLASS_NUMBER);
+            alert.setView(input);
+            alert.setPositiveButton("Divide", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    double div = mSum/Double.parseDouble(input.getText().toString());
+
+                    final Snackbar snackBar = Snackbar.make(
+                            mGraphicOverlay,
+                            "Divided sum: " + formatter.format(div),
+                            Snackbar.LENGTH_LONG);
+
+                    snackBar.setAction("OK", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            snackBar.dismiss();
+                        }
+                    });
+                    snackBar.show();
+                }
+            });
+            alert.show();
         }
+
         return true;
     }
 
@@ -359,7 +387,7 @@ public final class OcrCaptureActivity extends AppCompatActivity {
                         .setAction("add", new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                OcrCaptureActivity.this.add(value);
+                                DrunkSumActivity.this.add(value);
                             }
                         })
                         .show();

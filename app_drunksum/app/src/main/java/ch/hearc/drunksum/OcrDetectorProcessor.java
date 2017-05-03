@@ -75,7 +75,7 @@ public class OcrDetectorProcessor  implements Detector.Processor<TextBlock> {
                     value = value.replace("S","5");
                     Matcher matcher = NUMBER_PATTERN.matcher(value);
 
-                    // si le mot est un chiffre, on le dessine
+                    // si le mot est un chiffre, on le dessine en vert
                     if(matcher.find()){
                         OcrGraphic graphic = new OcrGraphic(mGraphicOverlay, line, Color.GREEN);
                         graphic.setValue(Double.parseDouble(matcher.group()));

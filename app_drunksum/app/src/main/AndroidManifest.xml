@@ -23,7 +23,7 @@
             android:name="com.google.android.gms.vision.DEPENDENCIES"
             android:value="ocr" />
 
-        <activity android:name="ch.hearc.drunksum.OcrCaptureActivity"
+        <activity android:name="ch.hearc.drunksum.DrunkSumActivity"
             android:label="DrunkSum">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
