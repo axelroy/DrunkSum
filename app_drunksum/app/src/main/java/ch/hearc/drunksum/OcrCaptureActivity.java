@@ -33,8 +33,12 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
@@ -83,9 +87,9 @@ public final class OcrCaptureActivity extends AppCompatActivity {
     private ScaleGestureDetector scaleGestureDetector;
     private GestureDetector gestureDetector;
 
-    // A TextToSpeech engine for speaking a String value.
-    private TextToSpeech tts;
     private double mSum;
+
+    private static final NumberFormat formatter = new DecimalFormat("#0.00");
 
     /**
      * Initializes the UI and creates the detector pipeline.
@@ -117,6 +121,25 @@ public final class OcrCaptureActivity extends AppCompatActivity {
         Snackbar.make(mGraphicOverlay, "Touch numbers to make the sum",
                 Snackbar.LENGTH_LONG)
                 .show();
+
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() ==R.id.reinit){
+            Toast.makeText(this, "Sum reinitialized", Toast.LENGTH_SHORT).show();
+            mSum=0;
+            setTitle("Sum: " + formatter.format(mSum));
+        }
+        return true;
     }
 
 
@@ -199,7 +222,7 @@ public final class OcrCaptureActivity extends AppCompatActivity {
                 new CameraSource.Builder(getApplicationContext(), textRecognizer)
                         .setFacing(CameraSource.CAMERA_FACING_BACK)
                         .setRequestedPreviewSize(1280, 1024)
-                        .setRequestedFps(15.0f)
+                        .setRequestedFps(2.0f)
                         .setFlashMode(useFlash ? Camera.Parameters.FLASH_MODE_TORCH : null)
                         .setFocusMode(autoFocus ? Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE : null)
                         .build();
@@ -324,20 +347,23 @@ public final class OcrCaptureActivity extends AppCompatActivity {
     private boolean onTap(float rawX, float rawY) {
         OcrGraphic graphic = mGraphicOverlay.getGraphicAtLocation(rawX, rawY);
         Text text = null;
+        
         if (graphic != null) {
             text = graphic.getText();
             Log.d("onTap", "text tapped : " + text.getValue());
 
             final double value = graphic.getValue();
-            Snackbar.make(mGraphicOverlay, "Add " + String.valueOf(value) + " ?",
-                    Snackbar.LENGTH_LONG)
-                    .setAction("add", new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            OcrCaptureActivity.this.add(value);
-                        }
-                    })
-                    .show();
+            if(value > 0){
+                Snackbar.make(mGraphicOverlay, "Add " + formatter.format(value) + " ?",
+                        Snackbar.LENGTH_LONG)
+                        .setAction("add", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                OcrCaptureActivity.this.add(value);
+                            }
+                        })
+                        .show();
+            }
         }
         else {
             Log.d("onTap", "no text detected");
@@ -347,8 +373,7 @@ public final class OcrCaptureActivity extends AppCompatActivity {
 
     private void add(double value) {
         mSum += value;
-        NumberFormat formatter = new DecimalFormat("#0.00");
-        Log.d("Sum", String.valueOf(mSum));
+        Toast.makeText(this, "Sum: " + formatter.format(mSum), Toast.LENGTH_SHORT).show();
         setTitle("Sum: " + formatter.format(mSum));
     }
 
