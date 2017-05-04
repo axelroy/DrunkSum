@@ -133,27 +133,35 @@ public final class DrunkSumActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        /*
+        Gère le clic sur un élément du menu
+         */
         if(item.getItemId() == R.id.reinit){
-
+            // remet la somme à 0
             Toast.makeText(this, "Sum reinitialized", Toast.LENGTH_SHORT).show();
             mSum=0;
             setTitle("Sum: " + formatter.format(mSum));
-
         }else if(item.getItemId() == R.id.divide){
-
+            // propose de divisier la somme
             AlertDialog.Builder alert = new AlertDialog.Builder(this);
             alert.setTitle("Divide sum by:");
             final EditText input = new EditText(this);
+            // n'afficher que les chiffres
             input.setInputType(InputType.TYPE_CLASS_NUMBER);
             alert.setView(input);
             alert.setPositiveButton("Divide", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
-                    double div = mSum/Double.parseDouble(input.getText().toString());
+                    double div = 0;
+                    try{
+                        // une exception survient si le texte est vide
+                        // si c'est 0, div vaut infinity
+                        div = mSum/Double.parseDouble(input.getText().toString());
+                    }catch (Exception e){}
 
                     final Snackbar snackBar = Snackbar.make(
                             mGraphicOverlay,
                             "Divided sum: " + formatter.format(div),
-                            Snackbar.LENGTH_LONG);
+                            Snackbar.LENGTH_INDEFINITE);
 
                     snackBar.setAction("OK", new View.OnClickListener() {
                         @Override
@@ -250,7 +258,7 @@ public final class DrunkSumActivity extends AppCompatActivity {
                 new CameraSource.Builder(getApplicationContext(), textRecognizer)
                         .setFacing(CameraSource.CAMERA_FACING_BACK)
                         .setRequestedPreviewSize(1280, 1024)
-                        .setRequestedFps(2.0f)
+                        .setRequestedFps(30.0f)
                         .setFlashMode(useFlash ? Camera.Parameters.FLASH_MODE_TORCH : null)
                         .setFocusMode(autoFocus ? Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE : null)
                         .build();
